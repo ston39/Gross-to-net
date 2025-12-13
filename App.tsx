@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { InsuranceMode, Region, TaxInput, TaxResult, TaxPolicy } from './types';
 import { calculateSalary, formatCurrency } from './utils/calculator';
-import { POLICIES, LUNCH_ALLOWANCE_EXEMPTION } from './constants';
+import { POLICIES } from './constants';
 import NumberInput from './components/NumberInput';
 import { DetailRow } from './components/DetailRow';
 import { Calculator, ShieldCheck, Wallet, Info } from 'lucide-react';
@@ -9,7 +9,6 @@ import { Calculator, ShieldCheck, Wallet, Info } from 'lucide-react';
 function App() {
   const [input, setInput] = useState<TaxInput>({
     grossSalary: 20000000, 
-    lunchAllowance: 0,
     otherNonTaxableAllowance: 0,
     insuranceMode: InsuranceMode.ON_GROSS,
     insuranceSalary: 5000000, 
@@ -81,19 +80,6 @@ function App() {
                 suffix="VND"
                 className="mb-4"
               />
-
-              <div className="mb-4">
-                 <NumberInput 
-                  label="Phụ cấp ăn trưa" 
-                  value={input.lunchAllowance}
-                  onChange={(val) => setInput(prev => ({ ...prev, lunchAllowance: val }))}
-                  suffix="VND"
-                />
-                <p className="text-[10px] text-green-600 mt-1 flex items-center gap-1">
-                   <ShieldCheck size={10} />
-                   Miễn thuế TNCN tối đa {formatCurrency(LUNCH_ALLOWANCE_EXEMPTION)}
-                </p>
-              </div>
 
               <div className="mb-4">
                  <NumberInput 
@@ -207,13 +193,6 @@ function App() {
                          value={result.grossSalary} 
                          highlight
                       />
-                      {result.lunchAllowance > 0 && (
-                        <DetailRow 
-                          label="Phụ cấp ăn trưa" 
-                          value={result.lunchAllowance}
-                          subText={`Miễn thuế: ${formatCurrency(Math.min(result.lunchAllowance, LUNCH_ALLOWANCE_EXEMPTION))}`} 
-                        />
-                      )}
                       {result.otherNonTaxableAllowance > 0 && (
                         <DetailRow 
                           label="Phụ cấp khác" 
@@ -293,7 +272,6 @@ function App() {
                     <li><strong>Hiện tại:</strong> Giảm trừ gia cảnh 11M (bản thân) / 4.4M (phụ thuộc). Biểu thuế 7 bậc.</li>
                     <li><strong>Từ 01/01/2026:</strong> Tăng giảm trừ gia cảnh lên <strong>15.5M</strong> (bản thân) và <strong>6.2M</strong> (phụ thuộc). Vẫn dùng biểu thuế hiện tại.</li>
                     <li><strong>Từ 01/07/2026:</strong> Áp dụng <strong>biểu thuế lũy tiến mới (5 bậc)</strong>. Giảm trừ gia cảnh giữ nguyên mức mới (15.5M/6.2M).</li>
-                    <li><strong>Phụ cấp ăn trưa:</strong> Miễn thuế TNCN cho phần không vượt quá 730,000đ/tháng.</li>
                   </ul>
                </div>
             </div>

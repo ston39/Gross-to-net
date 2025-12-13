@@ -2,20 +2,18 @@ import {
   SOCIAL_INSURANCE_RATE,
   HEALTH_INSURANCE_RATE,
   UNEMPLOYMENT_INSURANCE_RATE,
-  TAX_BRACKETS_CURRENT,
-  LUNCH_ALLOWANCE_EXEMPTION
+  TAX_BRACKETS_CURRENT
 } from '../constants';
 import { TaxInput, TaxResult, InsuranceMode, TaxPolicy } from '../types';
 
 export const calculateSalary = (input: TaxInput, policy: TaxPolicy): TaxResult => {
-  const { grossSalary, lunchAllowance, otherNonTaxableAllowance, insuranceMode, insuranceSalary, dependents, region } = input;
+  const { grossSalary, otherNonTaxableAllowance, insuranceMode, insuranceSalary, dependents, region } = input;
   const { baseSalary, personalDeduction, dependentDeduction, regionalMinSalary, taxBrackets } = policy;
 
   // Use brackets from policy, fallback to current global default
   const activeBrackets = taxBrackets || TAX_BRACKETS_CURRENT;
 
   // 1. Determine Insurance Base
-  // Note: Lunch allowance and other non-taxable allowances are typically exempt from compulsory insurance.
   // We assume 'grossSalary' is the base for insurance unless 'insuranceMode' is fixed.
   let baseSalaryForInsurance = grossSalary;
   
@@ -40,10 +38,9 @@ export const calculateSalary = (input: TaxInput, policy: TaxPolicy): TaxResult =
   const totalInsurance = socialInsurance + healthInsurance + unemploymentInsurance;
 
   // 3. Calculate Assessable Income (Thu nhập chịu thuế)
-  // Formula: Gross - Insurance + (Lunch - ExemptLunch)
+  // Formula: Gross - Insurance
   // Other Non-Taxable Allowance is excluded here entirely.
-  const taxableLunch = Math.max(0, lunchAllowance - LUNCH_ALLOWANCE_EXEMPTION);
-  const assessableIncome = (grossSalary - totalInsurance) + taxableLunch;
+  const assessableIncome = grossSalary - totalInsurance;
 
   // 4. Calculate Taxable Income (Thu nhập tính thuế)
   // Formula: Assessable - Deductions
@@ -65,13 +62,12 @@ export const calculateSalary = (input: TaxInput, policy: TaxPolicy): TaxResult =
   }
 
   // 6. Net Salary
-  // Net = Gross + Lunch + OtherNonTaxable - Insurance - Tax
-  const netSalary = grossSalary + lunchAllowance + otherNonTaxableAllowance - totalInsurance - taxAmount;
+  // Net = Gross + OtherNonTaxable - Insurance - Tax
+  const netSalary = grossSalary + otherNonTaxableAllowance - totalInsurance - taxAmount;
 
   return {
     policyId: policy.id,
     grossSalary,
-    lunchAllowance,
     otherNonTaxableAllowance,
     insuranceSalaryBase: baseSalaryForInsurance,
     socialInsurance,

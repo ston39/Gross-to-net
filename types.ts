@@ -12,8 +12,7 @@ export enum Region {
 
 export interface TaxInput {
   grossSalary: number;
-  lunchAllowance: number;
-  otherNonTaxableAllowance: number; // New field for other exempt allowances
+  otherNonTaxableAllowance: number; // For other exempt allowances
   insuranceMode: InsuranceMode;
   insuranceSalary: number; // Only used if mode is FIXED_AMOUNT
   dependents: number;
@@ -41,14 +40,13 @@ export interface TaxPolicy {
 export interface TaxResult {
   policyId: string;
   grossSalary: number;
-  lunchAllowance: number;
-  otherNonTaxableAllowance: number; // New field
+  otherNonTaxableAllowance: number;
   insuranceSalaryBase: number; // The actual base used for calc
   socialInsurance: number; // BHXH (8%)
   healthInsurance: number; // BHYT (1.5%)
   unemploymentInsurance: number; // BHTN (1%)
   totalInsurance: number;
-  assessableIncome: number; // Thu nhập chịu thuế (Gross - Insurance + Taxable Lunch)
+  assessableIncome: number; // Thu nhập chịu thuế (Gross - Insurance)
   personalDeduction: number;
   dependentDeduction: number;
   taxableIncome: number; // Thu nhập tính thuế (Assessable - Deductions)

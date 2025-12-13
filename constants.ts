@@ -5,8 +5,6 @@ export const SOCIAL_INSURANCE_RATE = 0.08;
 export const HEALTH_INSURANCE_RATE = 0.015;
 export const UNEMPLOYMENT_INSURANCE_RATE = 0.01;
 
-export const LUNCH_ALLOWANCE_EXEMPTION = 730000;
-
 // Current Progressive Tax Brackets (7 Levels)
 export const TAX_BRACKETS_CURRENT: TaxBracket[] = [
   { min: 0, max: 5000000, rate: 0.05, deduction: 0 },
