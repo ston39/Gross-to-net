@@ -49,7 +49,7 @@ function App() {
             <div className="bg-blue-600 p-2 rounded-lg text-white">
               <Calculator size={24} />
             </div>
-            <h1 className="text-xl font-bold text-gray-900">Tính Thuế TNCN 2025</h1>
+            <h1 className="text-xl font-bold text-gray-900">Tính thu nhập 2026</h1>
           </div>
           <a 
             href="https://github.com/vietvudanh/vietnam-tax-2025" 
