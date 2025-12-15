@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { InsuranceMode, Region, TaxInput, TaxResult, TaxPolicy } from './types';
 import { calculateSalary, formatCurrency } from './utils/calculator';
-import { POLICIES } from './constants';
+import { POLICIES, TAX_BRACKETS_CURRENT, TAX_BRACKETS_JULY_2026 } from './constants';
 import NumberInput from './components/NumberInput';
 import { DetailRow } from './components/DetailRow';
 import { Calculator, ShieldCheck, Wallet, Info } from 'lucide-react';
@@ -38,6 +38,14 @@ function App() {
       case Region.IV: return "Vùng IV";
       default: return "";
     }
+  };
+
+  const formatMillion = (val: number) => (val / 1000000);
+  
+  const formatRange = (min: number, max: number | null) => {
+    if (min === 0 && max) return `Đến ${formatMillion(max)} tr`;
+    if (max === null) return `Trên ${formatMillion(min)} tr`;
+    return `${formatMillion(min)} tr - ${formatMillion(max)} tr`;
   };
 
   return (
@@ -275,6 +283,58 @@ function App() {
                   </ul>
                </div>
             </div>
+
+            {/* Combined Tax Bracket Comparison Table */}
+            <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 font-semibold text-gray-800 text-sm">
+                So sánh biểu thuế lũy tiến từng phần
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left whitespace-nowrap">
+                  <thead className="text-xs text-gray-500 bg-gray-50 uppercase border-b border-gray-100">
+                    <tr>
+                      <th rowSpan={2} className="px-4 py-2 w-12 border-r border-gray-100 text-center">Bậc</th>
+                      <th colSpan={2} className="px-4 py-2 text-center border-r border-gray-100 bg-gray-100/50">Hiện tại (7 bậc)</th>
+                      <th colSpan={2} className="px-4 py-2 text-center bg-blue-50/50 text-blue-700">Mới (5 bậc) <span className="ml-1 text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full normal-case">Từ 01/07/2026</span></th>
+                    </tr>
+                    <tr>
+                      <th className="px-4 py-2 border-r border-gray-100 bg-gray-50">Thu nhập tính thuế</th>
+                      <th className="px-4 py-2 border-r border-gray-100 bg-gray-50 text-right">Thuế suất</th>
+                      <th className="px-4 py-2 bg-blue-50/30">Thu nhập tính thuế</th>
+                      <th className="px-4 py-2 bg-blue-50/30 text-right">Thuế suất</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {Array.from({ length: 7 }).map((_, i) => {
+                      const currentBracket = TAX_BRACKETS_CURRENT[i];
+                      const newBracket = TAX_BRACKETS_JULY_2026[i];
+                      return (
+                        <tr key={i} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-center font-medium text-gray-400 border-r border-gray-100">{i + 1}</td>
+                          
+                          {/* Current */}
+                          <td className="px-4 py-3 text-gray-700">
+                            {currentBracket ? formatRange(currentBracket.min, currentBracket.max) : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-right font-medium text-gray-900 border-r border-gray-100">
+                             {currentBracket ? `${currentBracket.rate * 100}%` : '-'}
+                          </td>
+
+                          {/* New */}
+                          <td className="px-4 py-3 text-gray-700 bg-blue-50/10">
+                            {newBracket ? formatRange(newBracket.min, newBracket.max) : <span className="text-gray-300 italic">Bỏ</span>}
+                          </td>
+                           <td className="px-4 py-3 text-right font-bold text-blue-600 bg-blue-50/10">
+                             {newBracket ? `${newBracket.rate * 100}%` : '-'}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
 
         </div>
