@@ -287,7 +287,7 @@ function App() {
             {/* Combined Tax Bracket Comparison Table */}
             <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 font-semibold text-gray-800 text-sm">
-                So sánh biểu thuế lũy tiến từng phần
+                Biểu thuế trước và sau thay đổi
               </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm text-left whitespace-nowrap">
