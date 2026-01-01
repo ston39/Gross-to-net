@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { InsuranceMode, Region, TaxInput, TaxResult, TaxPolicy } from './types';
 import { calculateSalary, formatCurrency } from './utils/calculator';
-import { POLICIES, TAX_BRACKETS_CURRENT, TAX_BRACKETS_JULY_2026 } from './constants';
+import { POLICIES, TAX_BRACKETS_CURRENT, TAX_BRACKETS_JULY_2026, REGIONAL_MIN_2026, REGIONAL_MIN_HOURLY_2026 } from './constants';
 import NumberInput from './components/NumberInput';
 import { DetailRow } from './components/DetailRow';
 import { Calculator, ShieldCheck, Wallet, Info } from 'lucide-react';
@@ -32,7 +32,7 @@ function App() {
 
   const getRegionName = (r: Region) => {
     switch(r) {
-      case Region.I: return "Vùng I (HN/HCM)";
+      case Region.I: return "Vùng I";
       case Region.II: return "Vùng II";
       case Region.III: return "Vùng III";
       case Region.IV: return "Vùng IV";
@@ -47,6 +47,8 @@ function App() {
     if (max === null) return `Trên ${formatMillion(min)} tr`;
     return `${formatMillion(min)} tr - ${formatMillion(max)} tr`;
   };
+
+  const currentPolicy = POLICIES.find(p => p.id === 'current');
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
@@ -73,7 +75,7 @@ function App() {
       <main className="max-w-7xl mx-auto px-2 sm:px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* Controls - Left Side (or Top on mobile) */}
+          {/* Controls */}
           <div className="lg:col-span-3 space-y-6">
             <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
               <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -149,7 +151,7 @@ function App() {
                   onChange={(val) => setInput(prev => ({ ...prev, dependents: val }))}
                 />
                 <div className="flex flex-col">
-                  <label className="text-sm font-medium text-gray-700 mb-1">Vùng</label>
+                  <label className="text-sm font-medium text-gray-700 mb-1">Vùng làm việc</label>
                   <select 
                     value={input.region}
                     onChange={(e) => setInput(prev => ({ ...prev, region: Number(e.target.value) }))}
@@ -164,7 +166,7 @@ function App() {
             </div>
           </div>
 
-          {/* Results - Comparison Grid */}
+          {/* Results Comparison */}
           <div className="lg:col-span-9">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {POLICIES.map((policy, index) => {
@@ -175,7 +177,6 @@ function App() {
                 return (
                   <div key={policy.id} className={`flex flex-col rounded-2xl border overflow-hidden transition-all duration-300 ${isCurrent ? 'border-blue-200 shadow-md md:-mt-2 md:mb-2 bg-white z-10' : 'border-gray-100 bg-gray-50/50 opacity-90 hover:opacity-100 hover:bg-white hover:shadow-sm'}`}>
                     
-                    {/* Header Card */}
                     <div className={`${isCurrent ? 'bg-blue-600' : 'bg-gray-700'} p-4 text-white text-center`}>
                       <h3 className="font-bold text-lg">{policy.name}</h3>
                       {policy.subLabel && <p className="text-xs opacity-80 mt-1">{policy.subLabel}</p>}
@@ -188,27 +189,13 @@ function App() {
                       </div>
                     </div>
 
-                    {/* Key Differences */}
                     <div className="px-4 py-3 bg-opacity-10 bg-gray-200 border-b border-gray-100 text-xs text-gray-500 flex justify-between items-center">
                        <span>Giảm trừ bản thân:</span>
                        <span className="font-semibold text-gray-700">{formatCurrency(policy.personalDeduction)}</span>
                     </div>
 
-                    {/* Detail Table */}
                     <div className="p-4 flex-1">
-                      <DetailRow 
-                         label="Lương Gross" 
-                         value={result.grossSalary} 
-                         highlight
-                      />
-                      {result.otherNonTaxableAllowance > 0 && (
-                        <DetailRow 
-                          label="Phụ cấp khác" 
-                          value={result.otherNonTaxableAllowance}
-                          subText="Không chịu thuế TNCN" 
-                        />
-                      )}
-                      
+                      <DetailRow label="Lương Gross" value={result.grossSalary} highlight />
                       <div className="my-3 border-t border-gray-100"></div>
 
                       <div className="space-y-2">
@@ -224,48 +211,25 @@ function App() {
                           <span className="text-gray-600">BHTN (1%)</span>
                           <span className="text-red-600 font-medium">-{formatCurrency(result.unemploymentInsurance)}</span>
                         </div>
-                      </div>
-
-                      <div className="my-3 border-t border-gray-100"></div>
-
-                      <DetailRow 
-                        label="TN chịu thuế" 
-                        value={result.assessableIncome} 
-                        highlight
-                      />
-                      
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">GT bản thân</span>
-                          <span className="text-red-600">-{formatCurrency(result.personalDeduction)}</span>
-                        </div>
-                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">GT phụ thuộc</span>
-                          <span className="text-red-600">-{formatCurrency(result.dependentDeduction)}</span>
+                        <div className="text-[10px] text-gray-400 italic mt-1 border-t border-gray-50 pt-1">
+                          Trần BHTN: {formatCurrency(20 * policy.regionalMinSalary[input.region])}
                         </div>
                       </div>
 
                       <div className="my-3 border-t border-gray-100"></div>
-
-                      <DetailRow 
-                        label="TN tính thuế" 
-                        value={result.taxableIncome} 
-                        highlight
-                      />
+                      <DetailRow label="TN tính thuế" value={result.taxableIncome} highlight />
                       <div className="mt-2 flex justify-between text-sm">
                           <span className="text-gray-600 font-semibold">Thuế TNCN</span>
                           <span className="text-red-600 font-bold">-{formatCurrency(result.taxAmount)}</span>
                       </div>
                     </div>
                     
-                    {/* Footer Summary */}
                     <div className="bg-gray-50 p-4 border-t border-gray-100">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm font-semibold text-gray-700">Tổng bảo hiểm</span>
-                        <span className="text-sm font-bold text-gray-900">{formatCurrency(result.totalInsurance)}</span>
+                        <span className="text-sm font-semibold text-gray-700">Thực nhận cuối</span>
+                        <span className="text-sm font-bold text-gray-900">{formatCurrency(result.netSalary)}</span>
                       </div>
                     </div>
-
                   </div>
                 );
               })}
@@ -275,11 +239,11 @@ function App() {
             <div className="mt-6 bg-blue-50 p-4 rounded-xl border border-blue-100 flex gap-3">
                <Info className="text-blue-600 shrink-0" size={20} />
                <div className="text-sm text-blue-800">
-                  <p className="font-semibold mb-1">Ghi chú:</p>
-                  <ul className="list-disc list-inside space-y-1 opacity-80">
-                    <li><strong>Hiện tại:</strong> Giảm trừ gia cảnh 11M (bản thân) / 4.4M (phụ thuộc). Biểu thuế 7 bậc.</li>
-                    <li><strong>Từ 01/01/2026:</strong> Tăng giảm trừ gia cảnh lên <strong>15.5M</strong> (bản thân) và <strong>6.2M</strong> (phụ thuộc). Vẫn dùng biểu thuế hiện tại.</li>
-                    <li><strong>Từ 01/07/2026:</strong> Áp dụng <strong>biểu thuế lũy tiến mới (5 bậc)</strong>. Giảm trừ gia cảnh giữ nguyên mức mới (15.5M/6.2M).</li>
+                  <p className="font-semibold mb-1">Ghi chú quan trọng cho năm 2026:</p>
+                  <ul className="list-disc list-inside space-y-1 opacity-90">
+                    <li><strong>Từ 01/01/2026:</strong> Tăng mức lương tối thiểu vùng (Nghị định 293/2025/NĐ-CP) và tăng mức giảm trừ gia cảnh (lên 15.5tr/6.2tr).</li>
+                    <li><strong>Lương tối thiểu vùng:</strong> Ảnh hưởng đến mức đóng tối thiểu và mức đóng tối đa (trần) của Bảo hiểm thất nghiệp.</li>
+                    <li><strong>Từ 01/07/2026:</strong> Chính thức áp dụng biểu thuế TNCN lũy tiến 5 bậc mới.</li>
                   </ul>
                </div>
             </div>
@@ -311,22 +275,10 @@ function App() {
                       return (
                         <tr key={i} className="hover:bg-gray-50">
                           <td className="px-4 py-3 text-center font-medium text-gray-400 border-r border-gray-100">{i + 1}</td>
-                          
-                          {/* Current */}
-                          <td className="px-4 py-3 text-gray-700">
-                            {currentBracket ? formatRange(currentBracket.min, currentBracket.max) : '-'}
-                          </td>
-                          <td className="px-4 py-3 text-right font-medium text-gray-900 border-r border-gray-100">
-                             {currentBracket ? `${currentBracket.rate * 100}%` : '-'}
-                          </td>
-
-                          {/* New */}
-                          <td className="px-4 py-3 text-gray-700 bg-blue-50/10">
-                            {newBracket ? formatRange(newBracket.min, newBracket.max) : <span className="text-gray-300 italic">Bỏ</span>}
-                          </td>
-                           <td className="px-4 py-3 text-right font-bold text-blue-600 bg-blue-50/10">
-                             {newBracket ? `${newBracket.rate * 100}%` : '-'}
-                          </td>
+                          <td className="px-4 py-3 text-gray-700">{currentBracket ? formatRange(currentBracket.min, currentBracket.max) : '-'}</td>
+                          <td className="px-4 py-3 text-right font-medium text-gray-900 border-r border-gray-100">{currentBracket ? `${currentBracket.rate * 100}%` : '-'}</td>
+                          <td className="px-4 py-3 text-gray-700 bg-blue-50/10">{newBracket ? formatRange(newBracket.min, newBracket.max) : <span className="text-gray-300 italic text-xs">Bỏ bậc</span>}</td>
+                          <td className="px-4 py-3 text-right font-bold text-blue-600 bg-blue-50/10">{newBracket ? `${newBracket.rate * 100}%` : '-'}</td>
                         </tr>
                       );
                     })}
@@ -335,8 +287,47 @@ function App() {
               </div>
             </div>
 
-          </div>
+            {/* Regional Minimum Salary Table */}
+            <div className="mt-8 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 font-semibold text-gray-800 text-sm flex justify-between items-center">
+                <span>Mức lương tối thiểu vùng (Nghị định 293/2025/NĐ-CP)</span>
+                <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full uppercase font-bold">Áp dụng từ 01/01/2026</span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-gray-500 bg-gray-50 uppercase border-b border-gray-100">
+                    <tr>
+                      <th className="px-4 py-2">Vùng</th>
+                      <th className="px-4 py-2 text-right">Mức cũ (tháng)</th>
+                      <th className="px-4 py-2 text-right bg-blue-50/50 text-blue-700 font-bold">Mức mới (tháng)</th>
+                      <th className="px-4 py-2 text-right text-blue-600">Mức mới (giờ)</th>
+                      <th className="px-4 py-2 text-right">Trần BHTN mới</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {[Region.I, Region.II, Region.III, Region.IV].map((r) => {
+                      const oldMin = currentPolicy?.regionalMinSalary[r] || 0;
+                      const newMin = REGIONAL_MIN_2026[r];
+                      const newHourly = REGIONAL_MIN_HOURLY_2026[r];
+                      return (
+                        <tr key={r} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 font-semibold text-gray-700">Vùng {r === 1 ? 'I' : r === 2 ? 'II' : r === 3 ? 'III' : 'IV'}</td>
+                          <td className="px-4 py-3 text-right text-gray-500">{formatCurrency(oldMin)}</td>
+                          <td className="px-4 py-3 text-right bg-blue-50/20 text-blue-700 font-bold">{formatCurrency(newMin)}</td>
+                          <td className="px-4 py-3 text-right text-blue-600">{formatCurrency(newHourly).replace('₫', '')}/giờ</td>
+                          <td className="px-4 py-3 text-right font-medium text-red-600">{formatCurrency(newMin * 20)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-3 bg-gray-50 border-t border-gray-100 text-[11px] text-gray-500">
+                * Mức lương tối thiểu vùng là căn cứ để tính trần đóng Bảo hiểm thất nghiệp (không quá 20 lần mức lương tối thiểu vùng).
+              </div>
+            </div>
 
+          </div>
         </div>
       </main>
     </div>

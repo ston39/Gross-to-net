@@ -17,11 +17,6 @@ export const TAX_BRACKETS_CURRENT: TaxBracket[] = [
 ];
 
 // New Tax Brackets effective July 1, 2026 (5 Levels)
-// Level 1: Up to 10M -> 5%
-// Level 2: 10-30M -> 10% (Quick deduction: 0.5M)
-// Level 3: 30-60M -> 20% (Quick deduction: 3.5M)
-// Level 4: 60-100M -> 30% (Quick deduction: 9.5M)
-// Level 5: >100M -> 35% (Quick deduction: 14.5M)
 export const TAX_BRACKETS_JULY_2026: TaxBracket[] = [
   { min: 0, max: 10000000, rate: 0.05, deduction: 0 },
   { min: 10000000, max: 30000000, rate: 0.10, deduction: 500000 },
@@ -29,6 +24,21 @@ export const TAX_BRACKETS_JULY_2026: TaxBracket[] = [
   { min: 60000000, max: 100000000, rate: 0.30, deduction: 9500000 },
   { min: 100000000, max: null, rate: 0.35, deduction: 14500000 },
 ];
+
+// Reference for the new Decree 293/2025/ND-CP values
+export const REGIONAL_MIN_2026 = {
+  [Region.I]: 5310000,
+  [Region.II]: 4730000,
+  [Region.III]: 4140000,
+  [Region.IV]: 3700000,
+};
+
+export const REGIONAL_MIN_HOURLY_2026 = {
+  [Region.I]: 25500,
+  [Region.II]: 22700,
+  [Region.III]: 20000,
+  [Region.IV]: 17800,
+};
 
 export const POLICIES: TaxPolicy[] = [
   {
@@ -48,31 +58,21 @@ export const POLICIES: TaxPolicy[] = [
   {
     id: 'jan_2026',
     name: 'Từ 01/01/2026',
-    subLabel: '(Giảm trừ mới)',
+    subLabel: '(Lương vùng & GT mới)',
     baseSalary: 2340000, 
     personalDeduction: 15500000, 
     dependentDeduction: 6200000, 
-    regionalMinSalary: {
-      [Region.I]: 4960000,
-      [Region.II]: 4410000,
-      [Region.III]: 3860000,
-      [Region.IV]: 3250000,
-    },
-    taxBrackets: TAX_BRACKETS_CURRENT // Old brackets until July
+    regionalMinSalary: REGIONAL_MIN_2026,
+    taxBrackets: TAX_BRACKETS_CURRENT
   },
   {
     id: 'jul_2026',
     name: 'Từ 01/07/2026',
-    subLabel: '(Biểu thuế mới)',
-    baseSalary: 2340000, // Note in image implies 2.34M base (46.8M limit)
+    subLabel: '(Đầy đủ thay đổi)',
+    baseSalary: 2340000,
     personalDeduction: 15500000,
     dependentDeduction: 6200000,
-    regionalMinSalary: {
-      [Region.I]: 4960000,
-      [Region.II]: 4410000,
-      [Region.III]: 3860000,
-      [Region.IV]: 3250000,
-    },
-    taxBrackets: TAX_BRACKETS_JULY_2026 // New 5-level brackets
+    regionalMinSalary: REGIONAL_MIN_2026,
+    taxBrackets: TAX_BRACKETS_JULY_2026
   }
 ];
